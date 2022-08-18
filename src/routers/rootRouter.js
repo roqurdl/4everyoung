@@ -1,5 +1,6 @@
 import express from "express";
-import { home, search, login, event } from "../controllers/userController";
+import { login, event } from "../controllers/userController";
+import { home, search } from "../controllers/itemController";
 
 const rootRouter = express.Router();
 
