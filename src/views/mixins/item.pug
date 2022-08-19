@@ -1,0 +1,4 @@
+mixin list(item)
+    a(href=`/items/${item.id}`)=item.title 
+    p #{item.description} 
+    span #{item.cost}

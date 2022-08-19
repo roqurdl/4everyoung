@@ -1,1 +1,9 @@
 extends ../layout.pug
+include ../mixins/item.pug
+block contents
+    div
+        each item in items 
+            +list(item)
+        else 
+            span Not Found.
+    

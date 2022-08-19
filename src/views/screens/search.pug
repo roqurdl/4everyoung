@@ -1,0 +1,11 @@
+extends ../layout.pug 
+include ../mixins/item.pug
+block contents
+    form(method="GET")
+        input(name="word" type="text" placeholder="Find by Title" required )
+        button Search
+    div
+        each item in items 
+            +list(item)
+        else
+            span Nothing Found.

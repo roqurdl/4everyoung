@@ -1,5 +1,6 @@
 import express from "express";
 import morgan from "morgan";
+import session from "express-session";
 import rootRouter from "./routers/rootRouter";
 import itemRouter from "./routers/itemRouter";
 const app = express();
@@ -10,6 +11,14 @@ app.set("views", __dirname + "/views/screens");
 
 app.use(LOGGER);
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use("/", rootRouter);
 app.use("/items", itemRouter);
