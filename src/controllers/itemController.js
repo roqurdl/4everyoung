@@ -33,3 +33,36 @@ export const postUpload = async (req, res) => {
   await Item.create({ title, description, cost });
   return res.redirect("/");
 };
+
+export const getEdit = async (req, res) => {
+  const { id } = req.params;
+  const item = await Item.findById(id);
+  return res.render("item/edit.pug", { pageTitle: `Edit ${item.title}`, item });
+};
+export const postEdit = async (req, res) => {
+  const {
+    body: { title, description, cost },
+    params: { id },
+  } = req;
+  await Item.findByIdAndUpdate(id, {
+    title,
+    description,
+    cost,
+  });
+  return res.redirect(`/items/${id}`);
+};
+
+export const deleteItem = async (req, res) => {
+  const { id } = req.params;
+  const item = await Item.findById(id);
+  if (item) {
+    await Item.findByIdAndDelete(id);
+  } else {
+    return res.render("item/edit.pug", {
+      pageTitle: `Edit ${item.title}`,
+      item,
+      errorMessage: "There is an Error.",
+    });
+  }
+  return res.redirect(`/`);
+};

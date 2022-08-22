@@ -1,0 +1,11 @@
+extends ../../layout.pug
+
+block contents
+    form(method="POST")
+        input(name="itemUrl" type="file" placeholder="Item image" accept="image/*")
+        input(name="title" type="text" placeholder="Title of item" required value=`${item.title}`)
+        input(name="infoUrl" type="file" placeholder="File of information" accept="image/*")
+        input(name="description" type="text" placeholder="Description of item" required value=`${item.description}`)
+        input(name="cost" type="text" placeholder="How much is it" required value=`${item.cost}`)
+        input(type="submit" value="Edit")
+    a(href=`/items/${item.id}/delete`) Delete item &rarr;
