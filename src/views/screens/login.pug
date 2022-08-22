@@ -1,0 +1,9 @@
+extends ../layout.pug
+
+block contents
+    form(method="POST")
+        input(name="username" type="text" required maxlenth=15 placeholder="Username")
+        input(name="pw" type="password" required placeholder="Password")
+        input(type="submit" value="Login")
+    br
+    a(href="/join") Don't have Account? &rarr;

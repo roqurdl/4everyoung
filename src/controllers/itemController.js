@@ -2,6 +2,7 @@ import Item from "../models/Item";
 
 export const home = async (req, res) => {
   const items = await Item.find({});
+  console.log(req.session);
   return res.render("home", { pageTitle: "Home", items });
 };
 

@@ -1,6 +1,33 @@
-export const login = (req, res) => {
-  return res.render("home");
+import User from "../models/User";
+
+export const getJoin = (req, res) => {
+  return res.render("join", { pageTitle: "Join" });
 };
-export const event = (req, res) => {
-  return res.render("home");
+export const postJoin = async (req, res) => {
+  const { email, username, name, pw, cpw } = req.body;
+  const user = await User.findOne({ username });
+  const pageTitle = "Join";
+  if (user) {
+    return res.render("join", {
+      pageTitle,
+      errorMessage: "Username is already exists.",
+    });
+  }
+  if (pw !== cpw) {
+    return res.render("join", {
+      pageTitle,
+      errorMessage: "Password is fail to pass the confirm.",
+    });
+  }
+  await User.create({
+    email,
+    username,
+    name,
+    pw,
+  });
+  return res.redirect("/login");
+};
+
+export const login = (req, res) => {
+  return res.render("login");
 };
