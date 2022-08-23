@@ -16,13 +16,15 @@ html(lang="en")
                     li 
                         a(href="/search") Search
                     li 
-                        a(href="/login") login
-                    li 
                         a(href="/items/upload") upload
         main
             block contents
         footer 
             nav 
-                ul 
-                    li 
-                        a(href="/login") Login
+                ul  
+                    if loggedIn 
+                        li
+                            a(herf="/profile") Profile
+                    else
+                        li 
+                            a(href="/login") Login
