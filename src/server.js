@@ -16,8 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     secret: "keyboard cat",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
   })
 );
 

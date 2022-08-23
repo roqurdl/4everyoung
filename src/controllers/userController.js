@@ -23,11 +23,14 @@ export const postJoin = async (req, res) => {
     email,
     username,
     name,
-    pw,
+    password: pw,
   });
   return res.redirect("/login");
 };
 
-export const login = (req, res) => {
-  return res.render("login");
+export const getLogin = (req, res) => {
+  return res.render("login", { pageTitle: "Login" });
+};
+export const postLogin = async (req, res) => {
+  return res.render("login", { pageTitle: "Login" });
 };
