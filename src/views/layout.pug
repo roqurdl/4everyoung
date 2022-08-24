@@ -24,7 +24,9 @@ html(lang="en")
                 ul  
                     if loggedIn 
                         li
-                            a(herf="/profile") Profile
+                            a(href="/profile") Profile
+                        li
+                            a(href="/users/logout") Logout
                     else
                         li 
                             a(href="/login") Login
