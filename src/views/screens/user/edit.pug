@@ -1,0 +1,14 @@
+extends ../../layout.pug
+
+block contents 
+    if errorMessage 
+        span=errorMessage
+    form(method="POST")
+        input(name="email" type="text" required maxlenth=15 placeholder="Write your E-mail" value=`${user.email}`)
+        input(name="username" type="text" required maxlenth=15 placeholder="Write your Username" value=`${user.username}`)
+        input(name="name" type="text" required maxlenth=15 placeholder="Write your name" value=`${user.name}`)
+        input(type="submit" value="Edit")
+    if !user.useSocial
+        a(href="/users/change-password") Edit Password &rarr;
+    p 
+        a(href="/users/delete") Delete Account &rarr;

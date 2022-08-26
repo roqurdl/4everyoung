@@ -60,6 +60,8 @@ export const logout = (req, res) => {
   return res.redirect("/");
 };
 
+//Using Social Account
+//-----Github
 export const startGithub = (req, res) => {
   const baseUrl = "https://github.com/login/oauth/authorize";
   const config = {
@@ -127,4 +129,42 @@ export const finishGithub = async (req, res) => {
       return res.redirect("/login");
     }
   }
+};
+//-----Google
+export const startGoogle = (req, res) => {};
+export const finishGoogle = (req, res) => {};
+
+export const profile = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+  } = req;
+  const user = await User.findById(_id);
+  return res.render("user/profile", { pageTitle: `${user.name}'s Profile` });
+};
+
+export const getEdit = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+  } = req;
+  const user = await User.findById(_id);
+  return res.render("user/edit", { pageTitle: `Edit Profile`, user });
+};
+export const postEdit = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+    body: { email, username, name },
+  } = req;
+  const updateUser = await User.findByIdAndUpdate(_id, {
+    email,
+    username,
+    name,
+  });
+  req.session.user = updateUser;
+  return res.redirect("/users/edit");
 };
