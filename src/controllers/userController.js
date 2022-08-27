@@ -134,23 +134,23 @@ export const finishGithub = async (req, res) => {
 export const startGoogle = (req, res) => {};
 export const finishGoogle = (req, res) => {};
 
-export const profile = async (req, res) => {
+const getLoginUser = async (req) => {
   const {
     session: {
       user: { _id },
     },
   } = req;
   const user = await User.findById(_id);
+  return user;
+};
+
+export const profile = async (req, res) => {
+  const user = await getLoginUser(req);
   return res.render("user/profile", { pageTitle: `${user.name}'s Profile` });
 };
 
 export const getEdit = async (req, res) => {
-  const {
-    session: {
-      user: { _id },
-    },
-  } = req;
-  const user = await User.findById(_id);
+  const user = await getLoginUser(req);
   return res.render("user/edit", { pageTitle: `Edit Profile`, user });
 };
 export const postEdit = async (req, res) => {
@@ -166,5 +166,61 @@ export const postEdit = async (req, res) => {
     name,
   });
   req.session.user = updateUser;
-  return res.redirect("/users/edit");
+  return res.redirect("/users/profile");
+};
+
+export const getPassword = async (req, res) => {
+  if (req.session.user.socialOnly === true) {
+    req.flash("error", "Can't change password.");
+    return res.redirect("/");
+  }
+  return res.render("user/edit-password", { pageTitle: `Edit Password` });
+};
+export const postPassword = async (req, res) => {
+  const {
+    body: { password: oldPw, newPw, newcpw },
+  } = req;
+  const user = await getLoginUser(req);
+  const hashCheck = await bcrypt.compare(oldPw, user.password);
+  if (!hashCheck) {
+    return res.status(ERROR).render("user/edit-password", {
+      pageTitle: "Edit Password",
+      errorMessage: `Password is wrong.`,
+    });
+  }
+  if (newPw !== newcpw) {
+    return res.status(ERROR).render("user/edit-password", {
+      pageTitle: "Edit Password",
+      errorMessage: `Password is fail to pass the confirm.`,
+    });
+  }
+  if (oldPw === newPw) {
+    return res.status(ERROR).render("user/edit-password", {
+      pageTitle: "Edit Password",
+      errorMessage: "The old password equals new password",
+    });
+  }
+  user.password = newPw;
+  await user.save();
+  req.session.destroy();
+  return res.redirect(`/login`);
+};
+
+export const delUser = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+  } = req;
+  const user = await User.findById(_id);
+  if (user) {
+    await User.findByIdAndDelete(_id);
+  } else {
+    return res.status(ERROR).render("user/edit-password", {
+      pageTitle: "Edit Password",
+      errorMessage: "There is an error.",
+    });
+  }
+  req.session.destroy();
+  return res.redirect(`/`);
 };
