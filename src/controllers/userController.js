@@ -131,8 +131,40 @@ export const finishGithub = async (req, res) => {
   }
 };
 //-----Google
-export const startGoogle = (req, res) => {};
-export const finishGoogle = (req, res) => {};
+export const startGoogle = (req, res) => {
+  const baseUrl = `https://accounts.google.com/o/oauth2/v2/auth`;
+  const config = {
+    client_id: process.env.GOOGLE_ID,
+    redirect_uri: `http://localhost:7000/users/google/finish`,
+    response_type: `code`,
+    scope: `https://www.googleapis.com/auth/indexing`,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  return res.redirect(finalUrl);
+};
+export const finishGoogle = async (req, res) => {
+  const baseUrl = ` https://oauth2.googleapis.com/token`;
+  const config = {
+    client_id: process.env.GOOGLE_ID,
+    client_secret: process.env.GOOGLE_SECRET,
+    grant_type: `authorization_code`,
+    code: req.query.code,
+    redirect_uri: `http://localhost:7000/users/google/finish`,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  const tokenBox = await (await fetch(finalUrl, { method: "POST" })).json();
+  if (`access_token` in tokenBox) {
+    const { access_token } = tokenBox;
+    const userData = await (
+      await fetch(
+        `https://www.googleapis.com/drive/v2/files?access_token=${access_token}`
+      )
+    ).json();
+    console.log(userData);
+  }
+};
 
 const getLoginUser = async (req) => {
   const {
