@@ -137,14 +137,14 @@ export const startGoogle = (req, res) => {
     client_id: process.env.GOOGLE_ID,
     redirect_uri: `http://localhost:7000/users/google/finish`,
     response_type: `code`,
-    scope: `https://www.googleapis.com/auth/indexing`,
+    scope: `https://www.googleapis.com/auth/userinfo.email`,
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
   return res.redirect(finalUrl);
 };
 export const finishGoogle = async (req, res) => {
-  const baseUrl = ` https://oauth2.googleapis.com/token`;
+  const baseUrl = `https://oauth2.googleapis.com/token`;
   const config = {
     client_id: process.env.GOOGLE_ID,
     client_secret: process.env.GOOGLE_SECRET,
@@ -154,12 +154,20 @@ export const finishGoogle = async (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  const tokenBox = await (await fetch(finalUrl, { method: "POST" })).json();
+  const tokenBox = await (
+    await fetch(finalUrl, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    })
+  ).json();
   if (`access_token` in tokenBox) {
     const { access_token } = tokenBox;
     const userData = await (
       await fetch(
-        `https://www.googleapis.com/drive/v2/files?access_token=${access_token}`
+        `https://www.googleapis.com/drive/v2/files?access_token=${access_token}`,
+        {
+          headers: { authorization: `Bearer ${access_token}` },
+        }
       )
     ).json();
     console.log(userData);
