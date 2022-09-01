@@ -1,6 +1,7 @@
 import User from "../models/User";
 import bcrypt from "bcrypt";
 import fetch from "node-fetch";
+import { json } from "express";
 
 const ERROR = 400;
 export const getJoin = (req, res) => {
@@ -130,8 +131,88 @@ export const finishGithub = async (req, res) => {
     }
   }
 };
+//-----kakao
+const REDIRECT_URL = `http://localhost:7000/users/kakao/finish`;
+
+export const startKakao = (req, res) => {
+  const baseUrl = `https://kauth.kakao.com/oauth/authorize`;
+  const config = {
+    client_id: process.env.KAKAO_ID,
+    redirect_uri: REDIRECT_URL,
+    response_type: `code`,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  return res.redirect(finalUrl);
+};
+export const finishKakao = async (req, res) => {
+  const baseUrl = `https://kauth.kakao.com/oauth/token`;
+  const config = {
+    client_id: process.env.KAKAO_ID,
+    client_secret: process.env.KAKAO_SECRET,
+    grant_type: `authorization_code`,
+    redirect_uri: REDIRECT_URL,
+    code: req.query.code,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  console.log(finalUrl);
+  const tokenBox = await (
+    await fetch(finalUrl, {
+      method: "POST",
+    })
+  ).json();
+  const apiUrl = `https://kapi.kakao.com`;
+  const { access_token } = tokenBox;
+  const userToken = await (
+    await fetch(`${apiUrl}/v1/user/access_token_info`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    })
+  ).json();
+  if (userToken.msg === "no authentication key!") {
+    console.log(userToken.msg);
+    return res.redirect("/login");
+  }
+  const userData = await (
+    await fetch(`${apiUrl}/v2/user/me`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    })
+  ).json();
+  const kakaoAccount = userData.kakao_account;
+  const userProfile = kakaoAccount.profile; // nickname=>name, profile_image_url
+  const userEmail = kakaoAccount.email; // =>email
+  console.log(typeof userToken.id.toString(), userProfile.nickname, userEmail);
+
+  let existUser = await User.findOne({ email: userEmail });
+  if (existUser) {
+    req.session.loggedIn = true;
+    req.session.user = existUser;
+    return res.redirect(`/`);
+  }
+  if (!existUser) {
+    const user = await User.create({
+      email: userEmail,
+      name: userProfile.nickname,
+      username: userToken.id.toString(),
+      password: "",
+      useSocial: true,
+    });
+    req.session.loggedIn = true;
+    req.session.user = user;
+    return res.redirect(`/`);
+  } else {
+    return res.redirect("/login");
+  }
+};
+
 //-----Google
-export const startGoogle = (req, res) => {
+
+/*export const startGoogle = (req, res) => {
   const baseUrl = `https://accounts.google.com/o/oauth2/v2/auth`;
   const config = {
     client_id: process.env.GOOGLE_ID,
@@ -166,13 +247,13 @@ export const finishGoogle = async (req, res) => {
       await fetch(
         `https://www.googleapis.com/drive/v2/files?access_token=${access_token}`,
         {
-          headers: { authorization: `Bearer ${access_token}` },
+          headers: { Authorization: `Bearer ${access_token}` },
         }
       )
     ).json();
     console.log(userData);
   }
-};
+};*/
 
 const getLoginUser = async (req) => {
   const {
