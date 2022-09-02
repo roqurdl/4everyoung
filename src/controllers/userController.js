@@ -132,13 +132,13 @@ export const finishGithub = async (req, res) => {
   }
 };
 //-----kakao
-const REDIRECT_URL = `http://localhost:7000/users/kakao/finish`;
+const REDIRECT_URL_KA = `http://localhost:7000/users/kakao/finish`;
 
 export const startKakao = (req, res) => {
   const baseUrl = `https://kauth.kakao.com/oauth/authorize`;
   const config = {
     client_id: process.env.KAKAO_ID,
-    redirect_uri: REDIRECT_URL,
+    redirect_uri: REDIRECT_URL_KA,
     response_type: `code`,
   };
   const params = new URLSearchParams(config).toString();
@@ -151,12 +151,11 @@ export const finishKakao = async (req, res) => {
     client_id: process.env.KAKAO_ID,
     client_secret: process.env.KAKAO_SECRET,
     grant_type: `authorization_code`,
-    redirect_uri: REDIRECT_URL,
+    redirect_uri: REDIRECT_URL_KA,
     code: req.query.code,
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  console.log(finalUrl);
   const tokenBox = await (
     await fetch(finalUrl, {
       method: "POST",
@@ -210,6 +209,68 @@ export const finishKakao = async (req, res) => {
   }
 };
 
+//-----Naver
+const REDIRECT_URL_NA = `http://localhost:7000/users/naver/finish`;
+
+export const startNaver = (req, res) => {
+  const baseUrl = `https://nid.naver.com/oauth2.0/authorize`;
+  const config = {
+    response_type: `code`,
+    client_id: process.env.NAVER_ID,
+    redirect_uri: REDIRECT_URL_NA,
+    state: `sdfgsdfd19sdg`,
+  };
+  // Naver는 위 순서를 제대로 지켜야 찾아간다.
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  return res.redirect(finalUrl);
+};
+export const finishNaver = async (req, res) => {
+  const code = req.query.code;
+  const state = req.query.state;
+  const baseUrl = `https://nid.naver.com/oauth2.0/token`;
+  const config = {
+    grant_type: `authorization_code`,
+    client_id: process.env.NAVER_ID,
+    client_secret: process.env.NAVER_SECRET,
+    redirect_uri: REDIRECT_URL_NA,
+    code,
+    state,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  const userToken = await (
+    await fetch(`${finalUrl}`, {
+      method: `POST`,
+      headers: {
+        client_id: process.env.NAVER_ID,
+        client_secret: process.env.NAVER_SECRET,
+      },
+    })
+  ).json();
+  const { access_token } = userToken;
+  const userBox = await (
+    await fetch(`https://openapi.naver.com/v1/nid/me`, {
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
+  ).json();
+  const userData = userBox.response;
+  const exits = await User.findOne({ email: userData.email });
+  if (!exits) {
+    const newUser = await User.create({
+      email: userData.email,
+      useSocial: true,
+      username: userData.id,
+      name: userData.name,
+      password: "",
+    });
+    req.session.loggedIn = true;
+    req.session.user = newUser;
+    return res.redirect(`/`);
+  } else {
+    return res.redirect("/login");
+  }
+};
 //-----Google
 
 /*export const startGoogle = (req, res) => {
