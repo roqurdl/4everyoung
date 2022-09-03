@@ -1,7 +1,6 @@
 import User from "../models/User";
 import bcrypt from "bcrypt";
 import fetch from "node-fetch";
-import { json } from "express";
 
 const ERROR = 400;
 export const getJoin = (req, res) => {
@@ -273,13 +272,13 @@ export const finishNaver = async (req, res) => {
 };
 //-----Google
 
-/*export const startGoogle = (req, res) => {
+export const startGoogle = (req, res) => {
   const baseUrl = `https://accounts.google.com/o/oauth2/v2/auth`;
   const config = {
     client_id: process.env.GOOGLE_ID,
     redirect_uri: `http://localhost:7000/users/google/finish`,
     response_type: `code`,
-    scope: `https://www.googleapis.com/auth/userinfo.email`,
+    scope: `https://www.googleapis.com/auth/cloud-platform`,
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
@@ -314,7 +313,7 @@ export const finishGoogle = async (req, res) => {
     ).json();
     console.log(userData);
   }
-};*/
+};
 
 const getLoginUser = async (req) => {
   const {
